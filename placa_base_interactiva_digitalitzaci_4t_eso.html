@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="ca" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Placa Base - Digitalització 4t ESO</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        motherboard: '#0f172a',
+                        circuit: '#0284c7',
+                        accent: '#10b981',
+                        gold: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+
+        .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .hotspot-pulse {
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+
+        .glow-hover:hover {
+            filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
+        }
+
+        .component-active {
+            filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.9));
+            stroke: #f59e0b !important;
+            stroke-width: 3px !important;
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col min-h-screen bg-slate-950 text-slate-100 antialiased overflow-x-hidden">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md bg-slate-900/90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
+                        <i class="fa-solid fa-microchip text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-heading font-bold bg-gradient-to-r from-sky-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                            La Placa Base
+                        </h1>
+                        <p class="text-xs text-slate-400 font-medium">Digitalització 4t ESO</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800/80">
+                    <button onclick="switchTab('explore')" id="tab-explore" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all bg-sky-600 text-white shadow-md">
+                        <i class="fa-solid fa-compass"></i>
+                        <span>1. Teoria i Explorador</span>
+                    </button>
+                    <button onclick="switchTab('pinpoint')" id="tab-pinpoint" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-bullseye"></i>
+                        <span>2. Joc d'Ubicació</span>
+                    </button>
+                    <button onclick="switchTab('assembly')" id="tab-assembly" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                        <span>3. Simulador d'Encaix</span>
+                    </button>
+                    <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>4. Test de Repàs</span>
+                    </button>
+                </nav>
+
+                <!-- Audio Toggle & Score Badge -->
+                <div class="flex items-center space-x-3">
+                    <div class="hidden sm:flex items-center space-x-2 bg-slate-800/80 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs">
+                        <i class="fa-solid fa-star text-amber-400"></i>
+                        <span class="text-slate-300 font-medium">Punts:</span>
+                        <span id="global-score" class="font-bold text-emerald-400 font-mono">0</span>
+                    </div>
+                    <button id="sound-btn" onclick="toggleAudio()" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-colors" title="Activar/Desactivar So">
+                        <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Bar (Bottom scrollable on mobile) -->
+        <div class="md:hidden flex overflow-x-auto px-4 py-2 bg-slate-950 border-t border-slate-800 gap-2 text-xs">
+            <button onclick="switchTab('explore')" id="mob-tab-explore" class="mob-tab-btn flex-shrink-0 px-3 py-1.5 rounded-lg bg-sky-600 text-white font-medium">
+                1. Teoria
+            </button>
+            <button onclick="switchTab('pinpoint')" id="mob-tab-pinpoint" class="mob-tab-btn flex-shrink-0 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium">
+                2. Ubicació
+            </button>
+            <button onclick="switchTab('assembly')" id="mob-tab-assembly" class="mob-tab-btn flex-shrink-0 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium">
+                3. Muntatge
+            </button>
+            <button onclick="switchTab('quiz')" id="mob-tab-quiz" class="mob-tab-btn flex-shrink-0 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium">
+                4. Test
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+        <!-- ================= PAGE 1: EXPLORE & LEARN ================= -->
+        <div id="view-explore" class="tab-view flex flex-col lg:flex-row gap-6">
+            <!-- Left Side: Interactive SVG Motherboard -->
+            <div class="lg:w-7/12 bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col justify-between shadow-xl relative">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-heading font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-microchip text-sky-400"></i>
+                            Placa Base ATX Interactive
+                        </h2>
+                        <p class="text-xs text-slate-400">Clica sobre els números (1-9) o els connectors per veure'n els detalls teòrics.</p>
+                    </div>
+                    <button onclick="resetExploreHighlight()" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-300 transition-colors">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reinicia
+                    </button>
+                </div>
+
+                <!-- SVG Container -->
+                <div class="relative w-full bg-slate-950/80 rounded-xl border border-slate-800/80 p-2 sm:p-4 overflow-hidden flex items-center justify-center">
+                    <svg viewBox="0 0 800 680" class="w-full h-auto max-h-[580px] drop-shadow-2xl font-sans" id="motherboard-svg">
+                        <!-- Motherboard Board Substrate -->
+                        <rect x="50" y="30" width="700" height="620" rx="16" fill="#0d1b2a" stroke="#1e293b" stroke-width="4"/>
+                        
+                        <!-- Decorative PCB Traces -->
+                        <g stroke="#0284c7" stroke-width="1.5" opacity="0.35" fill="none">
+                            <path d="M 120 180 L 220 180 L 280 240 L 450 240" />
+                            <path d="M 120 220 L 200 220 L 260 280 L 450 280" />
+                            <path d="M 220 100 L 220 140 L 400 140" />
+                            <path d="M 500 120 L 500 200 L 450 250 L 450 400" />
+                            <path d="M 480 340 L 600 340 L 650 390 L 650 500" />
+                            <path d="M 120 400 L 250 400 L 300 450 L 300 580" />
+                            <path d="M 120 450 L 220 450 L 260 490 L 500 490" />
+                            <!-- Circular Via Dots -->
+                            <circle cx="280" cy="240" r="3" fill="#0284c7" />
+                            <circle cx="260" cy="280" r="3" fill="#0284c7" />
+                            <circle cx="260" cy="490" r="3" fill="#0284c7" />
+                            <circle cx="650" cy="390" r="3" fill="#0284c7" />
+                        </g>
+
+                        <!-- COMPONENT 9: External IO Back Panel (Left edge) -->
+                        <g id="component-zone-9" onclick="selectComponent(9)" class="cursor-pointer group">
+                            <rect x="50" y="100" width="45" height="420" rx="6" fill="#1e293b" stroke="#475569" stroke-width="2" class="transition-colors group-hover:stroke-sky-400"/>
+                            <!-- PS/2 Ports -->
+                            <circle cx="72" cy="130" r="12" fill="#a855f7" opacity="0.8"/>
+                            <circle cx="72" cy="160" r="12" fill="#22c55e" opacity="0.8"/>
+                            <!-- USB Ports Top -->
+                            <rect x="62" y="190" width="20" height="12" rx="2" fill="#0f172a" stroke="#64748b"/>
+                            <rect x="62" y="210" width="20" height="12" rx="2" fill="#0f172a" stroke="#64748b"/>
+                            <!-- VGA & DVI -->
+                            <rect x="60" y="235" width="24" height="16" rx="2" fill="#2563eb"/>
+                            <rect x="60" y="260" width="24" height="20" rx="2" fill="#e2e8f0"/>
+                            <!-- HDMI -->
+                            <rect x="62" y="290" width="20" height="10" rx="2" fill="#d97706"/>
+                            <!-- USB 3.0 (Blue) -->
+                            <rect x="62" y="310" width="20" height="12" rx="2" fill="#0284c7"/>
+                            <rect x="62" y="330" width="20" height="12" rx="2" fill="#0284c7"/>
+                            <!-- RJ-45 Ethernet -->
+                            <rect x="60" y="355" width="24" height="24" rx="3" fill="#334155" stroke="#94a3b8"/>
+                            <!-- Audio Jacks -->
+                            <circle cx="72" cy="395" r="8" fill="#38bdf8"/>
+                            <circle cx="72" cy="420" r="8" fill="#22c55e"/>
+                            <circle cx="72" cy="445" r="8" fill="#f43f5e"/>
+                        </g>
+
+                        <!-- COMPONENT 1: CPU Socket & Heatsink Surround -->
+                        <g id="component-zone-1" onclick="selectComponent(1)" class="cursor-pointer group">
+                            <!-- VRM Heatsinks around socket -->
+                            <rect x="180" y="80" width="130" height="25" rx="4" fill="#0284c7" opacity="0.8" stroke="#38bdf8"/>
+                            <rect x="140" y="115" width="25" height="130" rx="4" fill="#0284c7" opacity="0.8" stroke="#38bdf8"/>
+                            <!-- Socket Base -->
+                            <rect x="185" y="120" width="125" height="125" rx="8" fill="#334155" stroke="#64748b" stroke-width="3" class="transition-colors group-hover:stroke-sky-400"/>
+                            <rect x="200" y="135" width="95" height="95" rx="4" fill="#1e293b" stroke="#0284c7" stroke-dasharray="3 3"/>
+                            <!-- Socket Locking Lever -->
+                            <line x1="315" y1="125" x2="315" y2="240" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="315" cy="240" r="5" fill="#cbd5e1"/>
+                            <text x="247" y="188" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="bold">CPU SOCKET</text>
+                        </g>
+
+                        <!-- COMPONENT 2: RAM Memory Slots -->
+                        <g id="component-zone-2" onclick="selectComponent(2)" class="cursor-pointer group">
+                            <!-- Dual Channel RAM Slots -->
+                            <rect x="360" y="70" width="16" height="200" rx="3" fill="#0284c7" stroke="#38bdf8"/>
+                            <rect x="385" y="70" width="16" height="200" rx="3" fill="#1e293b" stroke="#475569"/>
+                            <rect x="410" y="70" width="16" height="200" rx="3" fill="#0284c7" stroke="#38bdf8"/>
+                            <rect x="435" y="70" width="16" height="200" rx="3" fill="#1e293b" stroke="#475569"/>
+                            <!-- Slot Retention Clips -->
+                            <rect x="356" y="62" width="24" height="8" rx="2" fill="#e2e8f0"/>
+                            <rect x="356" y="270" width="24" height="8" rx="2" fill="#e2e8f0"/>
+                            <rect x="406" y="62" width="24" height="8" rx="2" fill="#e2e8f0"/>
+                            <rect x="406" y="270" width="24" height="8" rx="2" fill="#e2e8f0"/>
+                        </g>
+
+                        <!-- COMPONENT 4: ATX Power Supply Connector (24-pin) -->
+                        <g id="component-zone-4" onclick="selectComponent(4)" class="cursor-pointer group">
+                            <rect x="480" y="70" width="200" height="32" rx="4" fill="#0284c7" stroke="#38bdf8" stroke-width="2" class="transition-colors group-hover:stroke-amber-400"/>
+                            <!-- Pins grid (12x2) -->
+                            <g fill="#0f172a">
+                                <circle cx="492" cy="78" r="3"/><circle cx="508" cy="78" r="3"/><circle cx="524" cy="78" r="3"/><circle cx="540" cy="78" r="3"/>
+                                <circle cx="556" cy="78" r="3"/><circle cx="572" cy="78" r="3"/><circle cx="588" cy="78" r="3"/><circle cx="604" cy="78" r="3"/>
+                                <circle cx="620" cy="78" r="3"/><circle cx="636" cy="78" r="3"/><circle cx="652" cy="78" r="3"/><circle cx="668" cy="78" r="3"/>
+                                
+                                <circle cx="492" cy="94" r="3"/><circle cx="508" cy="94" r="3"/><circle cx="524" cy="94" r="3"/><circle cx="540" cy="94" r="3"/>
+                                <circle cx="556" cy="94" r="3"/><circle cx="572" cy="94" r="3"/><circle cx="588" cy="94" r="3"/><circle cx="604" cy="94" r="3"/>
+                                <circle cx="620" cy="94" r="3"/><circle cx="636" cy="94" r="3"/><circle cx="652" cy="94" r="3"/><circle cx="668" cy="94" r="3"/>
+                            </g>
+                        </g>
+
+                        <!-- COMPONENT 3: Chipset (with heatsink) -->
+                        <g id="component-zone-3" onclick="selectComponent(3)" class="cursor-pointer group">
+                            <rect x="520" y="160" width="130" height="110" rx="10" fill="#0284c7" stroke="#38bdf8" stroke-width="2" class="transition-colors group-hover:stroke-sky-300"/>
+                            <!-- Heatsink Fins decorative -->
+                            <line x1="535" y1="175" x2="635" y2="175" stroke="#0369a1" stroke-width="4"/>
+                            <line x1="535" y1="190" x2="635" y2="190" stroke="#0369a1" stroke-width="4"/>
+                            <line x1="535" y1="205" x2="635" y2="205" stroke="#0369a1" stroke-width="4"/>
+                            <line x1="535" y1="220" x2="635" y2="220" stroke="#0369a1" stroke-width="4"/>
+                            <line x1="535" y1="235" x2="635" y2="235" stroke="#0369a1" stroke-width="4"/>
+                            <line x1="535" y1="250" x2="635" y2="250" stroke="#0369a1" stroke-width="4"/>
+                            <text x="585" y="218" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold" opacity="0.9">XIPSET</text>
+                        </g>
+
+                        <!-- COMPONENT 5: SATA Connectors -->
+                        <g id="component-zone-5" onclick="selectComponent(5)" class="cursor-pointer group">
+                            <rect x="670" y="290" width="45" height="30" rx="4" fill="#0284c7" stroke="#38bdf8"/>
+                            <rect x="670" y="330" width="45" height="30" rx="4" fill="#0284c7" stroke="#38bdf8"/>
+                            <rect x="670" y="370" width="45" height="30" rx="4" fill="#0284c7" stroke="#38bdf8"/>
+                            <rect x="670" y="410" width="45" height="30" rx="4" fill="#0284c7" stroke="#38bdf8"/>
+                            <!-- L-shape internal notch -->
+                            <path d="M 678 300 H 700 V 306" stroke="#0f172a" stroke-width="3" fill="none"/>
+                            <path d="M 678 340 H 700 V 346" stroke="#0f172a" stroke-width="3" fill="none"/>
+                            <path d="M 678 380 H 700 V 386" stroke="#0f172a" stroke-width="3" fill="none"/>
+                            <path d="M 678 420 H 700 V 426" stroke="#0f172a" stroke-width="3" fill="none"/>
+                        </g>
+
+                        <!-- COMPONENT 6: BIOS / UEFI Chip -->
+                        <g id="component-zone-6" onclick="selectComponent(6)" class="cursor-pointer group">
+                            <rect x="580" y="330" width="45" height="30" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+                            <!-- IC Pins -->
+                            <line x1="580" y1="336" x2="574" y2="336" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="580" y1="345" x2="574" y2="345" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="580" y1="354" x2="574" y2="354" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="625" y1="336" x2="631" y2="336" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="625" y1="345" x2="631" y2="345" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="625" y1="354" x2="631" y2="354" stroke="#cbd5e1" stroke-width="2"/>
+                            <text x="602" y="350" text-anchor="middle" fill="#38bdf8" font-size="9" font-weight="bold">BIOS</text>
+                        </g>
+
+                        <!-- COMPONENT 7: CMOS Battery -->
+                        <g id="component-zone-7" onclick="selectComponent(7)" class="cursor-pointer group">
+                            <circle cx="530" cy="380" r="32" fill="#cbd5e1" stroke="#94a3b8" stroke-width="3" class="transition-colors group-hover:stroke-amber-400"/>
+                            <circle cx="530" cy="380" r="26" fill="#e2e8f0"/>
+                            <text x="530" y="376" text-anchor="middle" fill="#475569" font-size="10" font-weight="bold">CR2032</text>
+                            <text x="530" y="392" text-anchor="middle" fill="#0284c7" font-size="12" font-weight="bold">3V</text>
+                        </g>
+
+                        <!-- COMPONENT 8: Expansion Slots (PCI / PCIe x16 & x1) -->
+                        <g id="component-zone-8" onclick="selectComponent(8)" class="cursor-pointer group">
+                            <!-- PCIe x16 Slot 1 (Primary blue) -->
+                            <rect x="150" y="310" width="350" height="22" rx="3" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+                            <rect x="160" y="316" width="60" height="10" fill="#0f172a"/>
+                            <rect x="230" y="316" width="250" height="10" fill="#0f172a"/>
+
+                            <!-- PCIe x1 Slot -->
+                            <rect x="150" y="350" width="100" height="18" rx="3" fill="#0284c7" stroke="#38bdf8"/>
+                            <rect x="160" y="354" width="80" height="10" fill="#0f172a"/>
+
+                            <!-- PCIe x16 Slot 2 -->
+                            <rect x="150" y="385" width="350" height="22" rx="3" fill="#0284c7" stroke="#38bdf8"/>
+                            <rect x="160" y="391" width="60" height="10" fill="#0f172a"/>
+                            <rect x="230" y="391" width="250" height="10" fill="#0f172a"/>
+
+                            <!-- Legacy PCI Slots (Light Cyan) -->
+                            <rect x="150" y="430" width="350" height="24" rx="3" fill="#0891b2" stroke="#22d3ee"/>
+                            <rect x="160" y="436" width="330" height="12" fill="#0f172a"/>
+
+                            <rect x="150" y="475" width="350" height="24" rx="3" fill="#0891b2" stroke="#22d3ee"/>
+                            <rect x="160" y="481" width="330" height="12" fill="#0f172a"/>
+                        </g>
+
+                        <!-- Number Badges matching PDF diagram numbers 1 to 9 -->
+                        <!-- Badge 1: CPU -->
+                        <g transform="translate(247, 182.5)" onclick="selectComponent(1)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">1</text>
+                        </g>
+
+                        <!-- Badge 2: RAM -->
+                        <g transform="translate(410, 35)" onclick="selectComponent(2)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">2</text>
+                        </g>
+
+                        <!-- Badge 3: Chipset -->
+                        <g transform="translate(630, 150)" onclick="selectComponent(3)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">3</text>
+                        </g>
+
+                        <!-- Badge 4: Power -->
+                        <g transform="translate(580, 45)" onclick="selectComponent(4)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">4</text>
+                        </g>
+
+                        <!-- Badge 5: SATA -->
+                        <g transform="translate(710, 360)" onclick="selectComponent(5)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">5</text>
+                        </g>
+
+                        <!-- Badge 6: BIOS -->
+                        <g transform="translate(635, 310)" onclick="selectComponent(6)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">6</text>
+                        </g>
+
+                        <!-- Badge 7: Battery -->
+                        <g transform="translate(480, 410)" onclick="selectComponent(7)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">7</text>
+                        </g>
+
+                        <!-- Badge 8: Slots -->
+                        <g transform="translate(280, 360)" onclick="selectComponent(8)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">8</text>
+                        </g>
+
+                        <!-- Badge 9: I/O Ports -->
+                        <g transform="translate(35, 290)" onclick="selectComponent(9)" class="cursor-pointer">
+                            <circle r="18" fill="#f59e0b" stroke="#ffffff" stroke-width="2" class="hotspot-pulse"/>
+                            <text text-anchor="middle" dy="6" fill="#0f172a" font-size="16" font-weight="800">9</text>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Component selector mini buttons -->
+                <div class="mt-4 grid grid-cols-3 sm:grid-cols-9 gap-1.5">
+                    <button onclick="selectComponent(1)" id="num-btn-1" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">1. CPU</button>
+                    <button onclick="selectComponent(2)" id="num-btn-2" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">2. RAM</button>
+                    <button onclick="selectComponent(3)" id="num-btn-3" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">3. Xipset</button>
+                    <button onclick="selectComponent(4)" id="num-btn-4" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">4. Font</button>
+                    <button onclick="selectComponent(5)" id="num-btn-5" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">5. SATA</button>
+                    <button onclick="selectComponent(6)" id="num-btn-6" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">6. BIOS</button>
+                    <button onclick="selectComponent(7)" id="num-btn-7" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">7. Pila</button>
+                    <button onclick="selectComponent(8)" id="num-btn-8" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">8. Slots</button>
+                    <button onclick="selectComponent(9)" id="num-btn-9" class="num-btn py-1.5 rounded bg-slate-800 hover:bg-sky-600 text-xs font-bold transition-colors">9. I/O</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Interactive Theory Information Card -->
+            <div class="lg:w-5/12 bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
+                <div id="theory-card">
+                    <!-- Default state / dynamic header -->
+                    <div class="flex items-center space-x-3 pb-4 border-b border-slate-800">
+                        <span id="theory-badge" class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-heading font-bold text-lg">
+                            1
+                        </span>
+                        <div>
+                            <h3 id="theory-title" class="text-xl font-heading font-bold text-white">
+                                Sòcol de la CPU
+                            </h3>
+                            <p id="theory-subtitle" class="text-xs text-sky-400 font-medium">Socket del Processador Central</p>
+                        </div>
+                    </div>
+
+                    <!-- Description content -->
+                    <div class="mt-4 space-y-4 text-sm text-slate-300 leading-relaxed">
+                        <p id="theory-description" class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            És el receptacle de la placa base on s'instal·la el microprocessador (CPU). Conté els milers de pins o connectors que permeten intercanviar dades a altíssima velocitat entre el cervell de l'ordinador i la resta de la placa.
+                        </p>
+
+                        <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700/60 space-y-2">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-lightbulb text-amber-400"></i> Funció Clau
+                            </h4>
+                            <p id="theory-key-function" class="text-xs text-slate-200">
+                                Connectar la CPU directament als busos principals del sistema i permetre el seu refredament mitjançant dissipadors o ventiladors.
+                            </p>
+                        </div>
+
+                        <!-- Extra info list / Sub-connectors if item 9 -->
+                        <div id="theory-extra-container" class="space-y-2">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check text-sky-400"></i> Detalls addicionals
+                            </h4>
+                            <ul id="theory-extra-list" class="text-xs space-y-1.5 text-slate-300 list-disc list-inside">
+                                <li>Allotja el xip principal que executa totes les instruccions.</li>
+                                <li>Està equipat amb una palanca de fixació ZIF (Zero Insertion Force).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer tip / navigation -->
+                <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                    <span>Prem qualsevol element per explorar-ne la documentació.</span>
+                    <button onclick="switchTab('pinpoint')" class="text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1">
+                        Prova el joc <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 2: PINPOINT GAME ================= -->
+        <div id="view-pinpoint" class="tab-view hidden flex-col space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <!-- Game Status Header -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-heading font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-amber-400"></i>
+                            Joc d'Ubicació dels Components
+                        </h2>
+                        <p class="text-xs text-slate-400">Troba i clica sobre la part de la placa base descrita.</p>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Resta de preguntes</span>
+                            <span id="pinpoint-questions-left" class="text-lg font-bold text-amber-400 font-mono">9 / 9</span>
+                        </div>
+                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Encerts</span>
+                            <span id="pinpoint-score" class="text-lg font-bold text-emerald-400 font-mono">0</span>
+                        </div>
+                        <button onclick="startPinpointGame()" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-sky-600/20">
+                            <i class="fa-solid fa-play"></i> Nou Joc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Challenge Prompt Box -->
+                <div class="mt-6 bg-gradient-to-r from-sky-950/80 via-slate-900 to-indigo-950/80 p-5 rounded-2xl border border-sky-800/50 shadow-inner flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="space-y-1 text-center md:text-left">
+                        <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Objectiu a trobar:</span>
+                        <h3 id="pinpoint-target-name" class="text-xl font-heading font-bold text-white">
+                            Carregant joc...
+                        </h3>
+                        <p id="pinpoint-target-hint" class="text-xs text-slate-300">
+                            Prem "Nou Joc" per començar l'activitat.
+                        </p>
+                    </div>
+                    <div id="pinpoint-feedback" class="hidden text-sm font-bold px-4 py-2 rounded-xl border transition-all">
+                    </div>
+                </div>
+
+                <!-- Board Image Container for Game -->
+                <div class="mt-6 bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-center">
+                    <div class="w-full max-w-3xl">
+                        <!-- SVG Motherboard Reused for Game Click Events -->
+                        <div id="pinpoint-svg-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 3: ASSEMBLY SIMULATOR ================= -->
+        <div id="view-assembly" class="tab-view hidden flex-col space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-heading font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-screwdriver-wrench text-emerald-400"></i>
+                            Simulador de Muntatge d'Ordinadors
+                        </h2>
+                        <p class="text-xs text-slate-400">Selecciona el component i encaixa'l a la seva ranura correcta de la placa base.</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Completat</span>
+                            <span id="assembly-progress" class="text-lg font-bold text-emerald-400 font-mono">0 / 5</span>
+                        </div>
+                        <button onclick="resetAssemblyGame()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition-colors">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reinicia
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+                    <!-- Left: Component Inventory Palette -->
+                    <div class="lg:col-span-4 bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-box-open text-amber-400"></i> Inventari de Components
+                            </h3>
+                            <p class="text-xs text-slate-400 mb-4">Clica un element per seleccionar-lo i posteriorment clica el seu lloc d'encaix corresponent.</p>
+                            
+                            <div class="space-y-2.5" id="assembly-inventory">
+                                <!-- Inventory items populated dynamically -->
+                            </div>
+                        </div>
+
+                        <div id="assembly-status-box" class="mt-4 p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                            <i class="fa-solid fa-info-circle text-sky-400 mr-1"></i> Selecciona un component per començar l'encaix.
+                        </div>
+                    </div>
+
+                    <!-- Right: Target Motherboard Slot Board -->
+                    <div class="lg:col-span-8 bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center relative min-h-[420px]">
+                        <div id="assembly-board-container" class="w-full max-w-2xl">
+                            <!-- SVG Motherboard for Assembly -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PAGE 4: KNOWLEDGE QUIZ ================= -->
+        <div id="view-quiz" class="tab-view hidden flex-col space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-4xl mx-auto w-full">
+                <!-- Quiz Header -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-heading font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-sky-400"></i>
+                            Test de Repàs Teòric
+                        </h2>
+                        <p class="text-xs text-slate-400">Demostra els teus coneixements sobre la placa base, BIOS/UEFI i connectors.</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Pregunta</span>
+                            <span id="quiz-question-counter" class="text-lg font-bold text-sky-400 font-mono">1 / 8</span>
+                        </div>
+                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 block">Puntuació Quiz</span>
+                            <span id="quiz-score" class="text-lg font-bold text-emerald-400 font-mono">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Card Container -->
+                <div id="quiz-card-body" class="mt-6 space-y-6">
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-4">
+                        <span id="quiz-category-tag" class="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded bg-sky-950 text-sky-400 border border-sky-800">
+                            Tema: Placa Base
+                        </span>
+                        <h3 id="quiz-question-text" class="text-lg font-heading font-bold text-white">
+                            Carregant pregunta...
+                        </h3>
+                    </div>
+
+                    <!-- Options list -->
+                    <div id="quiz-options-container" class="grid grid-cols-1 gap-3">
+                        <!-- Options generated dynamically -->
+                    </div>
+
+                    <!-- Feedback & Explanation Box -->
+                    <div id="quiz-feedback-box" class="hidden p-4 rounded-xl border text-xs leading-relaxed transition-all">
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="flex justify-end pt-2">
+                        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden bg-sky-600 hover:bg-sky-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs transition-all shadow-lg shadow-sky-600/20 items-center gap-2">
+                            <span>Siguiente Pregunta</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quiz Certificate / Results Summary Screen (Hidden by default) -->
+                <div id="quiz-results-screen" class="hidden text-center py-8 space-y-6">
+                    <div class="w-20 h-20 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto text-3xl">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-heading font-bold text-white">Enhorabona! Has completat el test.</h3>
+                        <p id="quiz-final-score-text" class="text-sm text-slate-300 mt-2">Has obtingut X de Y punts.</p>
+                    </div>
+
+                    <!-- Certificate Generation Box -->
+                    <div class="max-w-md mx-auto bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 text-left">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-award text-base"></i> Generador de Certificat
+                        </h4>
+                        <p class="text-xs text-slate-400">Introdueix el teu nom i cognoms per descarregar o imprimir el teu diploma d'aprofitament:</p>
+                        <input type="text" id="student-name-input" placeholder="Ex: Marc García i López" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-sky-500">
+                        <button onclick="generateCertificate()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-certificate"></i> Genera Certificat Digital
+                        </button>
+                    </div>
+
+                    <div class="pt-4 flex justify-center gap-3">
+                        <button onclick="resetQuiz()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-bold">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Repetir Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Certificate Modal Screen (Printable) -->
+    <div id="certificate-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-amber-500/60 max-w-2xl w-full p-8 rounded-3xl relative text-center space-y-6 shadow-2xl">
+            <button onclick="closeCertificate()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Diploma Printable Area -->
+            <div id="printable-certificate" class="bg-slate-950 p-8 rounded-2xl border border-amber-500/30 text-slate-100 space-y-4 relative overflow-hidden">
+                <div class="absolute -right-12 -bottom-12 opacity-10 text-amber-400 text-9xl">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                
+                <div class="text-amber-400 font-heading font-bold text-xs uppercase tracking-widest">
+                    Certificat d'Aprofitament Digital
+                </div>
+                <h2 class="text-2xl font-heading font-bold text-white uppercase tracking-wider">
+                    Expert en la Placa Base
+                </h2>
+                <p class="text-xs text-slate-400">Aquest document certifica que:</p>
+                <div id="cert-student-name" class="text-xl font-heading font-extrabold text-sky-400 border-b border-sky-500/40 pb-2 inline-block px-8">
+                    Nom de l'Alumne/a
+                </div>
+                <p class="text-xs text-slate-300 max-w-lg mx-auto leading-relaxed">
+                    Ha superat amb èxit el mòdul interactiu d'estudi i identificació dels components principals de la placa base i sistemes d'I/O per a l'assignatura de <strong>Digitalització de 4t d'ESO</strong>.
+                </p>
+                
+                <div class="pt-6 flex justify-between items-end border-t border-slate-800 text-[10px] text-slate-400">
+                    <div class="text-left">
+                        <span>Data: <strong id="cert-date" class="text-slate-200">2026</strong></span><br>
+                        <span>Puntuació total: <strong id="cert-score" class="text-emerald-400">100 pts</strong></span>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold text-amber-400">Digitalització 4t ESO</span><br>
+                        <span>Departament de Tecnologia</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <button onclick="window.print()" class="bg-sky-600 hover:bg-sky-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Imprimir / Desar en PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                Recurs educatiu creat a partir del document <span class="text-slate-400 font-semibold">"La placa base.pdf"</span> per a Digitalització de 4t d'ESO.
+            </div>
+            <div class="flex items-center space-x-4 text-slate-400">
+                <span><i class="fa-solid fa-book-bookmark text-sky-400 mr-1"></i> BIOS / UEFI</span>
+                <span><i class="fa-solid fa-bolt text-amber-400 mr-1"></i> SATA & PCIe</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* ===================================================================
+           1. DATA STRUCTURES (Based strictly on "La placa base.pdf")
+           =================================================================== */
+        const motherboardComponents = {
+            1: {
+                title: "Sòcol de la CPU",
+                subtitle: "Socket del Processador",
+                badge: "1",
+                description: "És el connector físic de la placa base on s'allotja el microprocessador (CPU), el cervell de l'ordinador encarregat d'executar totes les instruccions del sistema.",
+                keyFunction: "Connecta la CPU amb els busos de comunicació de la placa i permet la instal·lació del sistema de refrigeració (ventilador i dissipador).",
+                extras: [
+                    "Dissenyat amb un mecanisme ZIF (Zero Insertion Force) per evitar danys als pins.",
+                    "Cada família de processadors (Intel / AMD) requereix un tipus de sòcol específic."
+                ]
+            },
+            2: {
+                title: "Ranures de Memòria (RAM)",
+                subtitle: "Slots DIMM de Memòria Principal",
+                badge: "2",
+                description: "En elles s'hi allotgen les plaques de memòria RAM. Habitualment n'hi ha més d'una per tal de permetre la possibilitat d'ampliar la memòria en el futur.",
+                keyFunction: "Emmagatzema temporalment les dades i programes que la CPU està executant en temps real per a un accés ultraràpid.",
+                extras: [
+                    "Compten amb pestanyes de fixació als extrems per assegurar els mòduls.",
+                    "Solen estar acolorides per indicar la configuració de doble canal (Dual Channel)."
+                ]
+            },
+            3: {
+                title: "Xipset (Chipset)",
+                subtitle: "Circuit Integrat d'Acompanyament",
+                badge: "3",
+                description: "Circuit que complementa la CPU per tal de descarregar-la d'algunes funcions, com per exemple la gestió del flux de dades cap a la memòria o cap als dispositius externs.",
+                keyFunction: "Coordina el trànsit de dades entre el processador, la memòria, les targetes d'expansió i els perifèrics.",
+                extras: [
+                    "Sosté un dissipador metàl·lic superior per evacuar la calor generada pel treball continu.",
+                    "Determina quines tecnologies (PCIe 4.0, USB 3.0, etc.) pot suportar la placa base."
+                ]
+            },
+            4: {
+                title: "Connector de la Font d'Alimentació",
+                subtitle: "Connector ATX de 24 Pins",
+                badge: "4",
+                description: "La font d'alimentació subministra a la placa base la tensió necessària (3.3V, 5V, 12V) per alimentar a tots els dispositius que hi van connectats.",
+                keyFunction: "Rebre l'energia elèctrica transformada de la font d'alimentació i distribuir-la per totes les línies de la placa.",
+                extras: [
+                    "Té una pestanya de seguretat lateral per evitar desconnexions accidentals.",
+                    "S'acompanya d'un connector addicional de 4 o 8 pins dedicat exclusivament a la CPU."
+                ]
+            },
+            5: {
+                title: "Connectors SATA",
+                subtitle: "Serial Advanced Technology Attachment",
+                badge: "5",
+                description: "Permeten connectar el disc dur (HDD/SSD) o unitat de DVD a la placa base. Van sortint noves versions d'aquest sistema de transferència de dades amb velocitats cada vegada més elevades.",
+                keyFunction: "Transmetre informació de massa entre els discos d'emmagatzematge permanent i la memòria de l'ordinador.",
+                extras: [
+                    "Tenen una forma en 'L' per evitar que el cable es connecti de revés.",
+                    "Algunes plaques base també tenen connectors SATA externs (eSATA)."
+                ]
+            },
+            6: {
+                title: "BIOS / UEFI",
+                subtitle: "Basic Input/Output System",
+                badge: "6",
+                description: "És el primer programa que s'executa a una computadora quan s'engega. La seva funció principal és la de carregar i inicialitzar el sistema operatiu. Quan l'ordinador s'engega, el BIOS inicialitza i identifica els dispositius (teclat, targeta gràfica, CD, etc.).",
+                keyFunction: "Verificar el maquinari inicial (test POST) i passar el control del sistema al disc que conté el Sistema Operatiu.",
+                extras: [
+                    "Es troba en una memòria no volàtil (ROM/Flash), permanent fins i tot sense corrent.",
+                    "En ordinadors nous s'està substituint la BIOS per un sistema amb més capacitats, anomenat UEFI (Unified Extensible Firmware Interface)."
+                ]
+            },
+            7: {
+                title: "Pila de la RAM-CMOS",
+                subtitle: "Bateria Botó CR2032 (3V)",
+                badge: "7",
+                description: "La BIOS controla també l'hora i data de l'ordinador, que s'ha de guardar en una memòria RAM per tal que es pugui anar modificant. Aquesta memòria és volàtil, per tant, en desconnectar l'ordinador perdria el seu contingut.",
+                keyFunction: "Alimentar contínuament la memòria CMOS per tal que l'ordinador no perdi l'hora ni la configuració de la BIOS quan està apagat.",
+                extras: [
+                    "Utilitza una pila de litil de tipus botó de 3 volts.",
+                    "Si l'ordinador desconfigura la data en engegar-se, és símptoma que la pila s'ha esgotat."
+                ]
+            },
+            8: {
+                title: "Ranures d'Expansió",
+                subtitle: "Slots PCI i PCI Express (PCIe)",
+                badge: "8",
+                description: "Permeten connectar targetes amb funcions específiques per millorar les prestacions de la placa base, com pot ser una targeta de xarxa o una targeta gràfica dedicades.",
+                keyFunction: "Ampliar les capacitats del sistema afegint maquinari especialitzat.",
+                extras: [
+                    "N'hi ha fonamentalment de dos tipus: PCI per a targetes antigues i PCI Express (PCIe) per a targetes noves de gran velocitat.",
+                    "Les ranures PCIe x16 tenen una pestanya al final per subjectar targetes gràfiques feixugues."
+                ]
+            },
+            9: {
+                title: "Connectors Externs",
+                subtitle: "Panell del Darrere (Rear I/O Panel)",
+                badge: "9",
+                description: "Connectors situats a la part posterior que permeten comunicar la CPU amb els dispositius d'entrada i sortida externs i gestionar el trànsit de dades.",
+                keyFunction: "Connectar perifèrics com ratolí, teclat, monitors, xarxa i equips d'àudio.",
+                extras: [
+                    "PS/2: Teclat (violeta) i Ratolí (verd) antics.",
+                    "USB / USB 3.0: Comunicació d'alta velocitat per a perifèrics moderns.",
+                    "VGA, DVI, HDMI: Connectors per a la sortida de vídeo i monitor.",
+                    "RJ-45: Port de xarxa Ethernet per a connexió a Internet per cable.",
+                    "Entrada de so, Altaveus i Micròfon: Connectors minijack d'àudio."
+                ]
+            }
+        };
+
+        // Assembly Simulator Items Data
+        const assemblyItems = [
+            { id: 'cpu', name: 'Microprocessador (CPU)', slot: 1, icon: 'fa-microchip', color: 'text-amber-400', desc: 'Sòcol de la CPU (1)' },
+            { id: 'ram', name: 'Mòdul de Memòria RAM', slot: 2, icon: 'fa-memory', color: 'text-sky-400', desc: 'Ranura RAM (2)' },
+            { id: 'gpu', name: 'Targeta Gràfica (PCIe)', slot: 8, icon: 'fa-tv', color: 'text-emerald-400', desc: 'Ranura PCIe (8)' },
+            { id: 'power', name: "Cable d'Alimentació ATX", slot: 4, icon: 'fa-plug', color: 'text-yellow-400', desc: 'Connector Font (4)' },
+            { id: 'sata', name: 'Cable SATA (Disc Dur)', slot: 5, icon: 'fa-hard-drive', color: 'text-rose-400', desc: 'Port SATA (5)' }
+        ];
+
+        // Quiz Questions Data (100% based on provided document)
+        const quizQuestions = [
+            {
+                question: "Quina és la funció principal del Xipset a la placa base?",
+                category: "Xipset",
+                options: [
+                    "Subministrar la tensió elèctrica necessària directament des de l'endoll.",
+                    "Complementar la CPU per descarregar-la de tasques com la gestió del flux de dades cap a la memòria o perifèrics.",
+                    "Emmagatzemar permanentment les fotos i fitxers de l'usuari.",
+                    "Engegar la pantalla quan l'ordinador es queda en suspensió."
+                ],
+                correct: 1,
+                explanation: "Segons el document, el Xipset és un circuit que complementa la CPU per tal de descarregar-la d'algunes funcions, com la gestió del flux de dades."
+            },
+            {
+                question: "Per què la placa base porta una pila (com la CR2032)?",
+                category: "Pila CMOS",
+                options: [
+                    "Perquè l'ordinador pugui funcionar sense estar connectat a la corrent elèctrica.",
+                    "Perquè el ventilador de la CPU no s'aturi mai.",
+                    "Perquè la memòria RAM-CMOS no perdi el seu contingut (com l'hora i data) quan l'ordinador es desconnecta.",
+                    "Per donar més potència als connectors USB 3.0."
+                ],
+                correct: 2,
+                explanation: "La memòria RAM on es guarda l'hora és volàtil. La pila manté aquesta memòria permanentment alimentada quan l'ordinador està apagat."
+            },
+            {
+                question: "Què és la BIOS i quina és la seva funció principal?",
+                category: "BIOS / UEFI",
+                options: [
+                    "Un connector per a discos durs externs de gran velocitat.",
+                    "El primer programa que s'executa en engegar per carregar, inicialitzar el SO i identificar el maquinari.",
+                    "Un tipus de targeta gràfica antiga de color blau.",
+                    "Un programa d'antivirus integrat al processador."
+                ],
+                correct: 1,
+                explanation: "El BIOS (Basic Input/Output System) és el primer programa que s'executa quan s'engega l'ordinador per inicialitzar els dispositius i carregar el sistema operatiu."
+            },
+            {
+                question: "Quin sistema modern està substituint progressivament la BIOS tradicional?",
+                category: "BIOS / UEFI",
+                options: [
+                    "SATA 3.0",
+                    "UEFI (Unified Extensible Firmware Interface)",
+                    "PCI Express 4.0",
+                    "CMOS RAM High Speed"
+                ],
+                correct: 1,
+                explanation: "El document especifica expressament que en ordinadors nous s'està substituint la BIOS per un sistema amb més capacitats anomenat UEFI."
+            },
+            {
+                question: "Quin connector s'utilitza principalment per connectar un disc dur o lector de DVD a la placa base?",
+                category: "Connectors",
+                options: [
+                    "Connector PS/2",
+                    "Ranura PCI de color verd",
+                    "Connector SATA",
+                    "Entrada de so minijack"
+                ],
+                correct: 2,
+                explanation: "Els connectors SATA permeten connectar el disc dur o la unitat de DVD a la placa base."
+            },
+            {
+                question: "Quins són els dos tipus principals de ranures d'expansió esmentats al document?",
+                category: "Ranures d'Expansió",
+                options: [
+                    "PCI per a targetes antigues i PCI Express per a targetes noves.",
+                    "USB 2.0 i USB 3.0.",
+                    "VGA i HDMI.",
+                    "SATA 1 i SATA 2."
+                ],
+                correct: 0,
+                explanation: "N'hi ha fonamentalment de dos tipus: PCI per a targetes antigues i PCI Express per a targetes noves."
+            },
+            {
+                question: "Si volem connectar un monitor modern a la sortida de la placa base, quins connectors de vídeo trobem al panell extern?",
+                category: "Connectors Externs",
+                options: [
+                    "Únicament connectors de tipus àudio minijack.",
+                    "RJ-45 i PS/2 violeta.",
+                    "VGA, DVI i HDMI.",
+                    "Connectors SATA externs."
+                ],
+                correct: 2,
+                explanation: "Els connectors de pantalla del panell posterior inclouen VGA (blau), DVI (blanc) i HDMI."
+            },
+            {
+                question: "Quin connector del panell extern s'utilitza per a la connexió de xarxa per cable (Ethernet)?",
+                category: "Connectors Externs",
+                options: [
+                    "PS/2 verd",
+                    "RJ-45",
+                    "VGA",
+                    "Jack de micròfon"
+                ],
+                correct: 1,
+                explanation: "El connector RJ-45 és el port utilitzat per a la xarxa d'ordinadors."
+            }
+        ];
+
+        /* ===================================================================
+           2. GLOBAL STATE VARIABLES
+           =================================================================== */
+        let audioEnabled = true;
+        let globalScore = 0;
+        let selectedComponentId = 1;
+
+        // Pinpoint Game State
+        let pinpointCurrentTargetIndex = 0;
+        let pinpointSequence = [];
+        let pinpointScore = 0;
+
+        // Assembly Game State
+        let assemblySelectedItemId = null;
+        let assemblyCompletedCount = 0;
+
+        // Quiz State
+        let quizCurrentIndex = 0;
+        let quizScore = 0;
+        let quizAnswered = false;
+
+        /* ===================================================================
+           3. AUDIO SYNTHESIZER (Web Audio API - No external files needed)
+           =================================================================== */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!audioEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(160, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio not supported or blocked", e);
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (audioEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-sky-400';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+            }
+        }
+
+        function addScore(pts) {
+            globalScore += pts;
+            document.getElementById('global-score').textContent = globalScore;
+        }
+
+        /* ===================================================================
+           4. TAB NAVIGATION SYSTEM
+           =================================================================== */
+        function switchTab(tabId) {
+            playSound('click');
+            
+            // Hide all tab views
+            document.querySelectorAll('.tab-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+
+            // Reset tab button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-all flex items-center space-x-2";
+            });
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.className = "mob-tab-btn flex-shrink-0 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-medium";
+            });
+
+            // Show active view & set tab styling
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                targetView.classList.add('flex');
+            }
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center space-x-2 transition-all bg-sky-600 text-white shadow-md";
+            }
+
+            const mobActiveBtn = document.getElementById(`mob-tab-${tabId}`);
+            if (mobActiveBtn) {
+                mobActiveBtn.className = "mob-tab-btn flex-shrink-0 px-3 py-1.5 rounded-lg bg-sky-600 text-white font-medium";
+            }
+
+            // Init specific tab logic if needed
+            if (tabId === 'pinpoint' && pinpointSequence.length === 0) {
+                startPinpointGame();
+            } else if (tabId === 'assembly') {
+                renderAssemblyBoard();
+            } else if (tabId === 'quiz' && quizCurrentIndex === 0) {
+                renderQuizQuestion();
+            }
+        }
+
+        /* ===================================================================
+           5. THEORY EXPLORER LOGIC
+           =================================================================== */
+        function selectComponent(num) {
+            playSound('click');
+            selectedComponentId = num;
+
+            const comp = motherboardComponents[num];
+            if (!comp) return;
+
+            // Highlight numerical buttons
+            for (let i = 1; i <= 9; i++) {
+                const btn = document.getElementById(`num-btn-${i}`);
+                if (btn) {
+                    if (i === num) {
+                        btn.className = "num-btn py-1.5 rounded bg-sky-600 text-white text-xs font-bold shadow-md";
+                    } else {
+                        btn.className = "num-btn py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors";
+                    }
+                }
+                const zone = document.getElementById(`component-zone-${i}`);
+                if (zone) {
+                    if (i === num) {
+                        zone.classList.add('component-active');
+                    } else {
+                        zone.classList.remove('component-active');
+                    }
+                }
+            }
+
+            // Update Theory Card
+            document.getElementById('theory-badge').textContent = comp.badge;
+            document.getElementById('theory-title').textContent = comp.title;
+            document.getElementById('theory-subtitle').textContent = comp.subtitle;
+            document.getElementById('theory-description').textContent = comp.description;
+            document.getElementById('theory-key-function').textContent = comp.keyFunction;
+
+            const extraList = document.getElementById('theory-extra-list');
+            extraList.innerHTML = '';
+            comp.extras.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                extraList.appendChild(li);
+            });
+        }
+
+        function resetExploreHighlight() {
+            selectComponent(1);
+        }
+
+        /* ===================================================================
+           6. PINPOINT GAME LOGIC
+           =================================================================== */
+        function startPinpointGame() {
+            playSound('click');
+            // Generate randomized sequence of numbers 1 to 9
+            pinpointSequence = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+            pinpointCurrentTargetIndex = 0;
+            pinpointScore = 0;
+            document.getElementById('pinpoint-score').textContent = '0';
+            
+            // Render SVG into game container
+            const originalSvg = document.getElementById('motherboard-svg').outerHTML;
+            const container = document.getElementById('pinpoint-svg-container');
+            container.innerHTML = originalSvg;
+
+            // Modify SVG IDs and click events for the game clone
+            const gameSvg = container.querySelector('svg');
+            gameSvg.id = 'pinpoint-game-svg';
+
+            for (let i = 1; i <= 9; i++) {
+                const zone = gameSvg.querySelector(`#component-zone-${i}`);
+                if (zone) {
+                    zone.setAttribute('onclick', `handlePinpointClick(${i})`);
+                }
+            }
+
+            showNextPinpointTarget();
+        }
+
+        function showNextPinpointTarget() {
+            const total = pinpointSequence.length;
+            if (pinpointCurrentTargetIndex >= total) {
+                // Game Finished
+                playSound('success');
+                confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+                document.getElementById('pinpoint-target-name').textContent = "🎉 Felicitats! Joc completat!";
+                document.getElementById('pinpoint-target-hint').textContent = `Has aconseguit encertar tots els components! Score: ${pinpointScore} pts.`;
+                document.getElementById('pinpoint-questions-left').textContent = `0 / ${total}`;
+                addScore(pinpointScore);
+                return;
+            }
+
+            const currentNum = pinpointSequence[pinpointCurrentTargetIndex];
+            const comp = motherboardComponents[currentNum];
+
+            document.getElementById('pinpoint-target-name').textContent = comp.title;
+            document.getElementById('pinpoint-target-hint').textContent = comp.description;
+            document.getElementById('pinpoint-questions-left').textContent = `${total - pinpointCurrentTargetIndex} / ${total}`;
+            
+            const fb = document.getElementById('pinpoint-feedback');
+            fb.classList.add('hidden');
+        }
+
+        function handlePinpointClick(clickedNum) {
+            const targetNum = pinpointSequence[pinpointCurrentTargetIndex];
+            const fb = document.getElementById('pinpoint-feedback');
+            fb.classList.remove('hidden');
+
+            if (clickedNum === targetNum) {
+                playSound('success');
+                pinpointScore += 15;
+                document.getElementById('pinpoint-score').textContent = pinpointScore;
+                fb.className = "text-xs font-bold px-4 py-2 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-700 flex items-center gap-1.5";
+                fb.innerHTML = `<i class="fa-solid fa-circle-check"></i> Correcte! És ${motherboardComponents[targetNum].title}.`;
+
+                pinpointCurrentTargetIndex++;
+                setTimeout(() => {
+                    showNextPinpointTarget();
+                }, 1200);
+            } else {
+                playSound('wrong');
+                fb.className = "text-xs font-bold px-4 py-2 rounded-xl bg-rose-950 text-rose-300 border border-rose-700 flex items-center gap-1.5";
+                fb.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Incorrecte. Això és ${motherboardComponents[clickedNum].title}. Prova de nou!`;
+            }
+        }
+
+        /* ===================================================================
+           7. ASSEMBLY SIMULATOR LOGIC
+           =================================================================== */
+        function resetAssemblyGame() {
+            playSound('click');
+            assemblySelectedItemId = null;
+            assemblyCompletedCount = 0;
+            document.getElementById('assembly-progress').textContent = `0 / ${assemblyItems.length}`;
+            renderAssemblyBoard();
+            renderAssemblyInventory();
+            document.getElementById('assembly-status-box').innerHTML = `<i class="fa-solid fa-info-circle text-sky-400 mr-1"></i> Selecciona un component de l'inventari per començar.`;
+        }
+
+        function renderAssemblyInventory() {
+            const container = document.getElementById('assembly-inventory');
+            container.innerHTML = '';
+
+            assemblyItems.forEach(item => {
+                const isCompleted = item.completed;
+                const isSelected = (assemblySelectedItemId === item.id);
+
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                    isCompleted 
+                        ? 'bg-slate-900 border-emerald-500/40 opacity-60 pointer-events-none' 
+                        : isSelected 
+                            ? 'bg-sky-950 border-sky-500 shadow-md ring-1 ring-sky-500' 
+                            : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                }`;
+
+                div.onclick = () => selectAssemblyItem(item.id);
+
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center ${item.color}">
+                            <i class="fa-solid ${item.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-200">${item.name}</div>
+                            <div class="text-[10px] text-slate-400">Encaixa a: ${item.desc}</div>
+                        </div>
+                    </div>
+                    <div>
+                        ${isCompleted 
+                            ? '<span class="text-xs text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Encaixat</span>' 
+                            : '<i class="fa-solid fa-hand-pointer text-xs text-slate-500"></i>'
+                        }
+                    </div>
+                `;
+
+                container.appendChild(div);
+            });
+        }
+
+        function selectAssemblyItem(itemId) {
+            playSound('click');
+            assemblySelectedItemId = itemId;
+            const item = assemblyItems.find(i => i.id === itemId);
+
+            renderAssemblyInventory();
+
+            const statusBox = document.getElementById('assembly-status-box');
+            statusBox.innerHTML = `
+                <span class="text-amber-400 font-bold">Has seleccionat:</span> ${item.name}.<br>
+                Clica ara la zona numèrica <strong>(${item.slot})</strong> a la placa base per instal·lar-ho.
+            `;
+        }
+
+        function renderAssemblyBoard() {
+            const originalSvg = document.getElementById('motherboard-svg').outerHTML;
+            const container = document.getElementById('assembly-board-container');
+            container.innerHTML = originalSvg;
+
+            const gameSvg = container.querySelector('svg');
+            gameSvg.id = 'assembly-game-svg';
+
+            // Add assembly click listeners to slots 1 to 9
+            for (let i = 1; i <= 9; i++) {
+                const zone = gameSvg.querySelector(`#component-zone-${i}`);
+                if (zone) {
+                    zone.setAttribute('onclick', `handleAssemblySlotClick(${i})`);
+                }
+            }
+        }
+
+        function handleAssemblySlotClick(slotNum) {
+            if (!assemblySelectedItemId) {
+                playSound('wrong');
+                document.getElementById('assembly-status-box').innerHTML = `
+                    <span class="text-rose-400 font-bold">Atenció:</span> Primer has de seleccionar un component de l'inventari de l'esquerra!
+                `;
+                return;
+            }
+
+            const activeItem = assemblyItems.find(i => i.id === assemblySelectedItemId);
+
+            if (activeItem.slot === slotNum) {
+                // Correct placement
+                playSound('success');
+                activeItem.completed = true;
+                assemblyCompletedCount++;
+                assemblySelectedItemId = null;
+
+                document.getElementById('assembly-progress').textContent = `${assemblyCompletedCount} / ${assemblyItems.length}`;
+                
+                renderAssemblyInventory();
+
+                document.getElementById('assembly-status-box').innerHTML = `
+                    <span class="text-emerald-400 font-bold">Encaix Perfecte!</span> S'ha instal·lat el ${activeItem.name} a la seva ranura corresponent.
+                `;
+
+                addScore(20);
+
+                if (assemblyCompletedCount >= assemblyItems.length) {
+                    confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+                    document.getElementById('assembly-status-box').innerHTML = `
+                        <span class="text-amber-400 font-bold">🏆 Muntatge Completat!</span> Tots els components estan instal·lats correctament a la placa base.
+                    `;
+                }
+
+            } else {
+                // Wrong placement
+                playSound('wrong');
+                document.getElementById('assembly-status-box').innerHTML = `
+                    <span class="text-rose-400 font-bold">Incompatible!</span> Aquest component no encaixa a la ranura ${slotNum}. Torna-ho a intentar.
+                `;
+            }
+        }
+
+        /* ===================================================================
+           8. QUIZ SYSTEM LOGIC
+           =================================================================== */
+        function renderQuizQuestion() {
+            quizAnswered = false;
+            const currentQ = quizQuestions[quizCurrentIndex];
+
+            document.getElementById('quiz-question-counter').textContent = `${quizCurrentIndex + 1} / ${quizQuestions.length}`;
+            document.getElementById('quiz-category-tag').textContent = `Tema: ${currentQ.category}`;
+            document.getElementById('quiz-question-text').textContent = currentQ.question;
+
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = '';
+
+            currentQ.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "quiz-option-btn w-full p-4 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 text-left text-sm font-medium text-slate-200 transition-all flex items-center justify-between group";
+                btn.onclick = () => checkQuizAnswer(idx);
+
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 flex items-center justify-center font-bold text-xs group-hover:border-sky-400 group-hover:text-sky-400 transition-colors">
+                            ${String.fromCharCode(65 + idx)}
+                        </span>
+                        <span>${optText}</span>
+                    </div>
+                    <i class="fa-regular fa-circle text-slate-600 group-hover:text-sky-400"></i>
+                `;
+
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback-box').classList.add('hidden');
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+            document.getElementById('quiz-next-btn').classList.remove('flex');
+        }
+
+        function checkQuizAnswer(selectedIdx) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+
+            const currentQ = quizQuestions[quizCurrentIndex];
+            const optionBtns = document.querySelectorAll('.quiz-option-btn');
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+
+            optionBtns.forEach((btn, idx) => {
+                btn.classList.add('pointer-events-none');
+                if (idx === currentQ.correct) {
+                    btn.className = "quiz-option-btn w-full p-4 rounded-xl bg-emerald-950/80 border-2 border-emerald-500 text-left text-sm font-semibold text-emerald-200 flex items-center justify-between";
+                } else if (idx === selectedIdx && selectedIdx !== currentQ.correct) {
+                    btn.className = "quiz-option-btn w-full p-4 rounded-xl bg-rose-950/80 border-2 border-rose-500 text-left text-sm font-semibold text-rose-200 flex items-center justify-between";
+                }
+            });
+
+            if (selectedIdx === currentQ.correct) {
+                playSound('success');
+                quizScore += 25;
+                document.getElementById('quiz-score').textContent = quizScore;
+                addScore(25);
+
+                feedbackBox.className = "p-4 rounded-xl bg-emerald-950/90 border border-emerald-700 text-emerald-200 text-xs leading-relaxed space-y-1";
+                feedbackBox.innerHTML = `
+                    <div class="font-bold text-sm flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Resposta Correcta!</div>
+                    <p>${currentQ.explanation}</p>
+                `;
+            } else {
+                playSound('wrong');
+                feedbackBox.className = "p-4 rounded-xl bg-rose-950/90 border border-rose-700 text-rose-200 text-xs leading-relaxed space-y-1";
+                feedbackBox.innerHTML = `
+                    <div class="font-bold text-sm flex items-center gap-1.5"><i class="fa-solid fa-circle-xmark"></i> Resposta Incorrecta</div>
+                    <p>${currentQ.explanation}</p>
+                `;
+            }
+
+            feedbackBox.classList.remove('hidden');
+
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.classList.remove('hidden');
+            nextBtn.classList.add('flex');
+        }
+
+        function nextQuizQuestion() {
+            playSound('click');
+            quizCurrentIndex++;
+            if (quizCurrentIndex < quizQuestions.length) {
+                renderQuizQuestion();
+            } else {
+                // Show quiz finish results
+                document.getElementById('quiz-card-body').classList.add('hidden');
+                const resultsScreen = document.getElementById('quiz-results-screen');
+                resultsScreen.classList.remove('hidden');
+
+                document.getElementById('quiz-final-score-text').textContent = `Has acumulat ${quizScore} punts en el test teòric!`;
+                confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+            }
+        }
+
+        function resetQuiz() {
+            playSound('click');
+            quizCurrentIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-score').textContent = '0';
+            document.getElementById('quiz-results-screen').classList.add('hidden');
+            document.getElementById('quiz-card-body').classList.remove('hidden');
+            renderQuizQuestion();
+        }
+
+        /* ===================================================================
+           9. CERTIFICATE GENERATOR
+           =================================================================== */
+        function generateCertificate() {
+            const nameInput = document.getElementById('student-name-input').value.trim();
+            if (!nameInput) {
+                alert("Si us plau, escriu el teu nom i cognoms per al certificat.");
+                return;
+            }
+
+            playSound('success');
+
+            document.getElementById('cert-student-name').textContent = nameInput;
+            document.getElementById('cert-score').textContent = `${globalScore} punts`;
+            
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('ca-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('cert-date').textContent = dateStr;
+
+            document.getElementById('certificate-modal').classList.remove('hidden');
+            confetti({ particleCount: 120, spread: 90, origin: { y: 0.4 } });
+        }
+
+        function closeCertificate() {
+            playSound('click');
+            document.getElementById('certificate-modal').classList.add('hidden');
+        }
+
+        /* ===================================================================
+           10. INITIALIZATION
+           =================================================================== */
+        window.onload = function() {
+            // Default load theory explorer
+            selectComponent(1);
+            // Pre-load assembly inventory items
+            assemblyItems.forEach(i => i.completed = false);
+            renderAssemblyInventory();
+        };
+    </script>
+</body>
+</html>
